@@ -1,6 +1,6 @@
-import { App, PluginSettingTab, Setting, AbstractInputSuggest, TFolder } from 'obsidian';
+import { App, PluginSettingTab, Setting, AbstractInputSuggest, TFolder, TFile } from 'obsidian';
 import VaultInboxPlugin from './main';
-import { FolderRule } from './types';
+import { BaseRule, FolderRule } from './types';
 
 export class VaultInboxSettingTab extends PluginSettingTab {
 	plugin: VaultInboxPlugin;
@@ -33,6 +33,31 @@ export class VaultInboxSettingTab extends PluginSettingTab {
 						type: 'folder',
 						folder: '',
 						recursive: true,
+					};
+					this.plugin.settings.rules.push(newRule);
+					await this.plugin.saveSettings();
+					this.display();
+				})
+			);
+
+		new Setting(containerEl)
+			.setName('Watched bases')
+			.setDesc('Watch new files that match a Bases view\'s filters. Note: only files whose frontmatter is set at creation time (e.g. via templates) will trigger notifications. Files filled in manually after creation will not.')
+			.setHeading();
+
+		for (const rule of this.plugin.settings.rules) {
+			if (rule.type === 'base') this.renderBaseRule(containerEl, rule);
+		}
+
+		new Setting(containerEl)
+			.addButton(btn => btn
+				.setButtonText('Add base')
+				.setCta()
+				.onClick(async () => {
+					const newRule: BaseRule = {
+						id: `r-${Date.now().toString(36)}`,
+						type: 'base',
+						basePath: '',
 					};
 					this.plugin.settings.rules.push(newRule);
 					await this.plugin.saveSettings();
@@ -90,6 +115,30 @@ export class VaultInboxSettingTab extends PluginSettingTab {
 				})
 			);
 	}
+
+	private renderBaseRule(container: HTMLElement, rule: BaseRule): void {
+		new Setting(container)
+			.setName(rule.basePath || '(no base selected)')
+			.addSearch(search => {
+				new BaseFileSuggest(this.app, search.inputEl);
+				search
+					.setPlaceholder('path/to/view.base')
+					.setValue(rule.basePath)
+					.onChange(async (value) => {
+						rule.basePath = value.trim();
+						await this.plugin.saveSettings();
+					});
+			})
+			.addExtraButton(btn => btn
+				.setIcon('trash')
+				.setTooltip('Remove')
+				.onClick(async () => {
+					this.plugin.settings.rules = this.plugin.settings.rules.filter(r => r.id !== rule.id);
+					await this.plugin.saveSettings();
+					this.display();
+				})
+			);
+	}
 }
 
 class FolderSuggest extends AbstractInputSuggest<TFolder> {
@@ -110,9 +159,7 @@ class FolderSuggest extends AbstractInputSuggest<TFolder> {
 			}
 		};
 		visit(this.app.vault.getRoot());
-		return folders
-			.filter(f => f.path.toLowerCase().includes(q))
-			.slice(0, 50);
+		return folders.filter(f => f.path.toLowerCase().includes(q)).slice(0, 50);
 	}
 
 	renderSuggestion(folder: TFolder, el: HTMLElement): void {
@@ -121,6 +168,32 @@ class FolderSuggest extends AbstractInputSuggest<TFolder> {
 
 	selectSuggestion(folder: TFolder): void {
 		this.inputEl.value = folder.path;
+		this.inputEl.trigger('input');
+		this.close();
+	}
+}
+
+class BaseFileSuggest extends AbstractInputSuggest<TFile> {
+	private inputEl: HTMLInputElement;
+
+	constructor(app: App, inputEl: HTMLInputElement) {
+		super(app, inputEl);
+		this.inputEl = inputEl;
+	}
+
+	getSuggestions(query: string): TFile[] {
+		const q = query.toLowerCase();
+		return this.app.vault.getFiles()
+			.filter(f => f.extension === 'base' && f.path.toLowerCase().includes(q))
+			.slice(0, 50);
+	}
+
+	renderSuggestion(file: TFile, el: HTMLElement): void {
+		el.setText(file.path);
+	}
+
+	selectSuggestion(file: TFile): void {
+		this.inputEl.value = file.path;
 		this.inputEl.trigger('input');
 		this.close();
 	}

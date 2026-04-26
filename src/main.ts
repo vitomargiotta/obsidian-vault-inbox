@@ -8,7 +8,7 @@ import { VaultInboxSettingTab } from './settings';
 export default class VaultInboxPlugin extends Plugin {
 	settings!: VaultInboxSettings;
 	store!: NotificationStore;
-	private watcher!: Watcher;
+	watcher!: Watcher;
 	private ribbonEl?: HTMLElement;
 	private ribbonBadge?: HTMLElement;
 
@@ -73,5 +73,6 @@ export default class VaultInboxPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+		this.watcher?.refreshBases();
 	}
 }

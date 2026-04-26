@@ -7,7 +7,13 @@ export interface FolderRule {
 	recursive: boolean;
 }
 
-export type WatchRule = FolderRule;
+export interface BaseRule {
+	id: string;
+	type: 'base';
+	basePath: string;
+}
+
+export type WatchRule = FolderRule | BaseRule;
 
 export interface InboxNotification {
 	id: string;

@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice } from 'obsidian';
+import { ItemView, WorkspaceLeaf, Notice, Menu } from 'obsidian';
 import { NotificationStore } from './store';
 import { InboxNotification, VIEW_TYPE_INBOX } from './types';
 
@@ -59,6 +59,11 @@ export class InboxView extends ItemView {
 		});
 		const dot = row.createDiv({ cls: 'vault-inbox-dot' });
 		dot.toggleClass('is-unread', !n.read);
+		dot.setAttr('aria-label', n.read ? 'Mark as unread' : 'Mark as read');
+		dot.addEventListener('click', (evt) => {
+			evt.stopPropagation();
+			void this.store.toggleRead(n.id);
+		});
 
 		const main = row.createDiv({ cls: 'vault-inbox-main' });
 		const basename = n.path.split('/').pop() ?? n.path;
@@ -76,6 +81,22 @@ export class InboxView extends ItemView {
 			}
 			void this.app.workspace.openLinkText(n.path, '', false);
 			void this.store.markRead(n.id);
+		});
+
+		row.addEventListener('contextmenu', (evt) => {
+			evt.preventDefault();
+			const menu = new Menu();
+			menu.addItem(item => item
+				.setTitle(n.read ? 'Mark as unread' : 'Mark as read')
+				.setIcon(n.read ? 'mail' : 'mail-open')
+				.onClick(() => { void this.store.toggleRead(n.id); })
+			);
+			menu.addItem(item => item
+				.setTitle('Remove')
+				.setIcon('trash')
+				.onClick(() => { void this.store.remove(n.id); })
+			);
+			menu.showAtMouseEvent(evt);
 		});
 	}
 }

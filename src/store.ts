@@ -42,12 +42,37 @@ export class NotificationStore extends Events {
 		this.trigger('change');
 	}
 
+	async markUnread(id: string): Promise<void> {
+		const n = this.settings.notifications.find(x => x.id === id);
+		if (!n || !n.read) return;
+		n.read = false;
+		await this.persist();
+		this.trigger('change');
+	}
+
+	async toggleRead(id: string): Promise<void> {
+		const n = this.settings.notifications.find(x => x.id === id);
+		if (!n) return;
+		n.read = !n.read;
+		await this.persist();
+		this.trigger('change');
+	}
+
 	async markAllRead(): Promise<void> {
 		let changed = false;
 		for (const n of this.settings.notifications) {
 			if (!n.read) { n.read = true; changed = true; }
 		}
 		if (changed) {
+			await this.persist();
+			this.trigger('change');
+		}
+	}
+
+	async remove(id: string): Promise<void> {
+		const before = this.settings.notifications.length;
+		this.settings.notifications = this.settings.notifications.filter(n => n.id !== id);
+		if (this.settings.notifications.length !== before) {
 			await this.persist();
 			this.trigger('change');
 		}

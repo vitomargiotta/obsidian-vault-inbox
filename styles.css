@@ -51,16 +51,23 @@
 }
 
 .vault-inbox-dot {
-	width: 8px;
-	height: 8px;
+	width: 10px;
+	height: 10px;
 	border-radius: 50%;
-	margin-top: 6px;
+	margin-top: 5px;
 	flex-shrink: 0;
 	background: transparent;
+	border: 1px solid var(--background-modifier-border);
+	cursor: pointer;
+}
+
+.vault-inbox-dot:hover {
+	border-color: var(--interactive-accent);
 }
 
 .vault-inbox-dot.is-unread {
 	background: var(--interactive-accent);
+	border-color: var(--interactive-accent);
 }
 
 .vault-inbox-main {

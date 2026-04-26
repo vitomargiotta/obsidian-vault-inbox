@@ -107,9 +107,9 @@ export class VaultInboxSettingTab extends PluginSettingTab {
 	private renderFolderRule(container: HTMLElement, rule: FolderRule): void {
 		new Setting(container)
 			.setName(rule.folder || '(no folder selected)')
-			.addSearch(search => {
-				new FolderSuggest(this.app, search.inputEl);
-				search
+			.addText(text => {
+				new FolderSuggest(this.app, text.inputEl);
+				text
 					.setPlaceholder('Folder path')
 					.setValue(rule.folder)
 					.onChange(async (value) => {
@@ -117,14 +117,6 @@ export class VaultInboxSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					});
 			})
-			.addToggle(toggle => toggle
-				.setTooltip('Recursive (include subfolders)')
-				.setValue(rule.recursive)
-				.onChange(async (value) => {
-					rule.recursive = value;
-					await this.plugin.saveSettings();
-				})
-			)
 			.addExtraButton(btn => btn
 				.setIcon('trash')
 				.setTooltip('Remove')
@@ -139,9 +131,9 @@ export class VaultInboxSettingTab extends PluginSettingTab {
 	private renderBaseRule(container: HTMLElement, rule: BaseRule): void {
 		new Setting(container)
 			.setName(rule.basePath || '(no base selected)')
-			.addSearch(search => {
-				new BaseFileSuggest(this.app, search.inputEl);
-				search
+			.addText(text => {
+				new BaseFileSuggest(this.app, text.inputEl);
+				text
 					.setPlaceholder('path/to/view.base')
 					.setValue(rule.basePath)
 					.onChange(async (value) => {

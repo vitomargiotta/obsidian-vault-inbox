@@ -42,7 +42,7 @@ export class VaultInboxSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Watched bases')
-			.setDesc('Watch new files that match a Bases view\'s filters. Note: only files whose frontmatter is set at creation time (e.g. via templates) will trigger notifications. Files filled in manually after creation will not.')
+			.setDesc('Watch new files that match a .base file\'s filters; requires frontmatter set at creation time, such as via a template.')
 			.setHeading();
 
 		for (const rule of this.plugin.settings.rules) {
@@ -66,15 +66,15 @@ export class VaultInboxSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName('OS notifications')
+			.setName('Desktop notifications')
 			.setHeading();
 
 		const osDesc = Platform.isDesktop
 			? 'Show a native desktop notification (macOS Notification Center, Windows toast, Linux libnotify) when a new item lands in the inbox. Click the notification to open the file.'
-			: 'Native OS notifications are desktop-only. On mobile, only the in-app sidebar inbox is available.';
+			: 'Native desktop notifications are desktop-only. On mobile, only the in-app sidebar inbox is available.';
 
 		new Setting(containerEl)
-			.setName('Show OS notifications')
+			.setName('Show desktop notifications')
 			.setDesc(`${osDesc} (Desktop only.)`)
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.osNotifications)

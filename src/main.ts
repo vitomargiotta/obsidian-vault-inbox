@@ -21,9 +21,8 @@ export default class VaultInboxPlugin extends Plugin {
 
 		this.registerView(VIEW_TYPE_INBOX, (leaf) => new InboxView(leaf, this.store));
 
-		this.ribbonEl = this.addRibbonIcon('inbox', 'Vault Inbox', () => { void this.activateView(); });
+		this.ribbonEl = this.addRibbonIcon('inbox', 'Vault inbox', () => { void this.activateView(); });
 		this.ribbonEl.addClass('vault-inbox-ribbon');
-		this.ribbonEl.style.position = 'relative';
 		this.ribbonBadge = this.ribbonEl.createDiv({ cls: 'vault-inbox-ribbon-badge' });
 
 		this.addCommand({
@@ -67,7 +66,7 @@ export default class VaultInboxPlugin extends Plugin {
 	private refreshBadge(): void {
 		if (!this.ribbonBadge) return;
 		const unread = this.store.unreadCount();
-		this.ribbonBadge.style.display = unread > 0 ? 'block' : 'none';
+		this.ribbonBadge.toggleClass('is-visible', unread > 0);
 	}
 
 	private async activateView(): Promise<void> {
@@ -77,7 +76,7 @@ export default class VaultInboxPlugin extends Plugin {
 			leaf = workspace.getRightLeaf(false);
 			if (leaf) await leaf.setViewState({ type: VIEW_TYPE_INBOX, active: true });
 		}
-		if (leaf) workspace.revealLeaf(leaf);
+		if (leaf) await workspace.revealLeaf(leaf);
 	}
 
 	async loadSettings() {

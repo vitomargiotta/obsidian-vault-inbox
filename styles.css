@@ -99,7 +99,12 @@
 	white-space: nowrap;
 }
 
+.vault-inbox-ribbon {
+	position: relative;
+}
+
 .vault-inbox-ribbon-badge {
+	display: none;
 	position: absolute;
 	top: 2px;
 	right: 2px;
@@ -108,6 +113,10 @@
 	border-radius: 50%;
 	background: var(--interactive-accent);
 	pointer-events: none;
+}
+
+.vault-inbox-ribbon-badge.is-visible {
+	display: block;
 }
 
 .vault-inbox-rule-row {

@@ -37,7 +37,7 @@ export function parseBase(content: string): ParsedBase {
 		collected.push(parseFilterValue(root.filters, warnings));
 	}
 
-	const views = Array.isArray(root.views) ? root.views : [];
+	const views: unknown[] = Array.isArray(root.views) ? root.views as unknown[] : [];
 	if (views.length > 1) {
 		warnings.push(`Base has ${views.length} views; only the first one's filters are used.`);
 	}

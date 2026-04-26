@@ -13,7 +13,7 @@ export class InboxView extends ItemView {
 	}
 
 	getViewType(): string { return VIEW_TYPE_INBOX; }
-	getDisplayText(): string { return 'Vault Inbox'; }
+	getDisplayText(): string { return 'Vault inbox'; }
 	getIcon(): string { return 'inbox'; }
 
 	async onOpen(): Promise<void> {

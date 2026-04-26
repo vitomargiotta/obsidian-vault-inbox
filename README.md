@@ -1,90 +1,92 @@
-# Obsidian Sample Plugin
+# Vault Inbox
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+An Obsidian plugin that gives you a sidebar **inbox** of new files appearing in folders or [Bases](https://help.obsidian.md/bases) views you're watching.
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+If you sync your vault across devices, capture notes from external tools (web clipper, mobile capture, Readwise, etc.), or have automation dropping files into your vault, Vault Inbox surfaces those new arrivals so you don't have to go looking for them.
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open modal (simple)" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+## What it does
 
-## First time developing plugins?
+- Watch any number of folders (recursively or not).
+- Watch any number of `.base` files — Vault Inbox parses the base's filters and only notifies you when a new file actually matches them.
+- New arrivals show up in a sidebar list with read/unread state.
+- Click a notification to open the file. It's marked as read automatically.
+- Optional native desktop notifications (macOS Notification Center, Windows toast, Linux libnotify).
+- Notifications survive app restarts and follow files when you rename them.
 
-Quick starting guide for new plugin devs:
+## Why "external-only"?
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+The plugin tries hard to **not** notify you about files *you* just created from inside Obsidian (otherwise the inbox would fill up with your own typing). Two heuristics:
 
-## Releasing new releases
+1. **Startup grace period** — no notifications for the first 5 seconds after the plugin loads (kills the initial sync flood).
+2. **Self-create suppression** — if a newly-created file becomes the active editor within 500 ms, it's assumed to be one you just made, and the notification is suppressed.
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+The result: Vault Inbox is most useful for files that arrive from *outside* your current Obsidian session — sync from another device, an external tool writing to the vault folder, etc.
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+## Installation
 
-## Adding your plugin to the community plugin list
+The plugin isn't on the official Obsidian community plugin list yet. Install via [BRAT](https://github.com/TfTHacker/obsidian42-brat):
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+1. In Obsidian, install and enable the **BRAT** community plugin.
+2. Open BRAT settings → **Add Beta Plugin**.
+3. Paste: `vitomargiotta/obsidian-vault-inbox`
+4. Settings → Community plugins → enable **Vault Inbox**.
 
-## How to use
+BRAT will keep the plugin up to date as new releases are tagged.
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+### Manual install
 
-## Manually installing the plugin
+Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/vitomargiotta/obsidian-vault-inbox/releases) and drop them into `<vault>/.obsidian/plugins/vault-inbox/`.
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+## Configuration
 
-## Improve code quality with eslint
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- This project already has eslint preconfigured, you can invoke a check by running`npm run lint`
-- Together with a custom eslint [plugin](https://github.com/obsidianmd/eslint-plugin) for Obsidan specific code guidelines.
-- A GitHub action is preconfigured to automatically lint every commit on all branches.
+Settings → **Vault Inbox**.
 
-## Funding URL
+### Watched folders
 
-You can include funding URLs where people who use your plugin can financially support it.
+Click **Add folder**, type or pick a folder path, and toggle **Recursive** if you want subfolders included. A new file created in any of these folders fires a notification.
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
+### Watched bases
 
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
-```
+Click **Add base** and pick a `.base` file. Vault Inbox parses the base's filter and only notifies you when a new file matches *all* of the filter's conditions.
 
-If you have multiple URLs, you can also do:
+The filter language supported in v0.1:
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
-```
+- `==`, `!=` operators
+- `and:`, `or:` combinators
+- `file.folder`, `file.name`, `file.path` references
+- Frontmatter property names (e.g. `type`, `status`, `product`)
 
-## API Documentation
+Anything outside this subset (functions, regex, comparisons other than `==`/`!=`) generates a one-time warning notice and is ignored — files that *would* match those parts of the filter are still considered candidates and may trigger notifications.
 
-See https://docs.obsidian.md
+> **Important caveat:** Only files whose frontmatter is **set at creation time** (typically via a template) reliably trigger base notifications. If you create a file blank and fill in `type`/`product`/etc. afterwards, Vault Inbox will likely time out and not notify you. Manually-created files are a planned improvement.
+
+### OS notifications
+
+Toggle **Show OS notifications** to also fire native desktop banners. Click the banner to focus Obsidian and open the file.
+
+This is **desktop-only** — Obsidian's mobile platform doesn't provide a reliable native-notification API to plugins. The toggle is disabled on mobile.
+
+## Sidebar inbox
+
+Open from the **inbox icon** in the left ribbon, or via the command palette: *Vault Inbox: Open inbox*.
+
+- Click a row → opens the file, marks read.
+- Click the **dot** → toggles read/unread without opening the file.
+- Right-click a row → menu with **Mark as read/unread** and **Remove**.
+- Header buttons: **Mark all read**, **Clear read** (deletes all read notifications).
+- The ribbon icon shows a small dot when there are unread notifications.
+
+## Storage
+
+Notifications are persisted in the plugin's `data.json` and survive app restarts. The default cap is 500 — once exceeded, oldest read notifications are dropped first, then oldest overall. Configurable in settings.
+
+## Limitations
+
+- v0.1 only watches `create` events. `modify`, `delete`, and `rename` are not watch triggers (renames *do* update existing notifications' paths automatically).
+- Base watching requires frontmatter to be present at file-create time (see caveat above).
+- OS notifications are desktop-only.
+- The base filter language supported is a subset; complex expressions are ignored with a warning.
+
+## License
+
+MIT — see [LICENSE](LICENSE).

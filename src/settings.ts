@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting, AbstractInputSuggest, TFolder, TFile } from 'obsidian';
+import { App, PluginSettingTab, Platform, Setting, AbstractInputSuggest, TFolder, TFile } from 'obsidian';
 import VaultInboxPlugin from './main';
 import { BaseRule, FolderRule } from './types';
 
@@ -62,6 +62,26 @@ export class VaultInboxSettingTab extends PluginSettingTab {
 					this.plugin.settings.rules.push(newRule);
 					await this.plugin.saveSettings();
 					this.display();
+				})
+			);
+
+		new Setting(containerEl)
+			.setName('OS notifications')
+			.setHeading();
+
+		const osDesc = Platform.isDesktop
+			? 'Show a native desktop notification (macOS Notification Center, Windows toast, Linux libnotify) when a new item lands in the inbox. Click the notification to open the file.'
+			: 'Native OS notifications are desktop-only. On mobile, only the in-app sidebar inbox is available.';
+
+		new Setting(containerEl)
+			.setName('Show OS notifications')
+			.setDesc(`${osDesc} (Desktop only.)`)
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.osNotifications)
+				.setDisabled(!Platform.isDesktop)
+				.onChange(async (value) => {
+					this.plugin.settings.osNotifications = value;
+					await this.plugin.saveSettings();
 				})
 			);
 

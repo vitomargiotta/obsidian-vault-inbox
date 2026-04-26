@@ -31,6 +31,7 @@ export class NotificationStore extends Events {
 		this.settings.notifications.unshift(note);
 		this.enforceCap();
 		await this.persist();
+		this.trigger('added', note);
 		this.trigger('change');
 	}
 

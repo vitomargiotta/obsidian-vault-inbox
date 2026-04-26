@@ -28,12 +28,14 @@ export interface VaultInboxSettings {
 	rules: WatchRule[];
 	notifications: InboxNotification[];
 	maxNotifications: number;
+	osNotifications: boolean;
 }
 
 export const DEFAULT_SETTINGS: VaultInboxSettings = {
 	rules: [],
 	notifications: [],
 	maxNotifications: 500,
+	osNotifications: false,
 };
 
 export const VIEW_TYPE_INBOX = 'vault-inbox-view';

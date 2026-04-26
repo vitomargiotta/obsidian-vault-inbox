@@ -1,5 +1,5 @@
-import { Plugin, WorkspaceLeaf } from 'obsidian';
-import { DEFAULT_SETTINGS, VaultInboxSettings, VIEW_TYPE_INBOX } from './types';
+import { Plugin, Platform, WorkspaceLeaf } from 'obsidian';
+import { DEFAULT_SETTINGS, InboxNotification, VaultInboxSettings, VIEW_TYPE_INBOX } from './types';
 import { NotificationStore } from './store';
 import { Watcher } from './watcher';
 import { InboxView } from './view';
@@ -40,7 +40,24 @@ export default class VaultInboxPlugin extends Plugin {
 		this.addSettingTab(new VaultInboxSettingTab(this.app, this));
 
 		this.store.on('change', () => this.refreshBadge());
+		this.store.on('added', (note: InboxNotification) => this.maybeFireOsNotification(note));
 		this.refreshBadge();
+	}
+
+	private maybeFireOsNotification(note: InboxNotification): void {
+		if (!this.settings.osNotifications) return;
+		if (!Platform.isDesktop) return;
+		if (typeof Notification === 'undefined') return;
+		const basename = (note.path.split('/').pop() ?? note.path).replace(/\.md$/, '');
+		const folder = note.path.includes('/') ? note.path.slice(0, note.path.lastIndexOf('/')) : '/';
+		const n = new Notification('Vault Inbox', {
+			body: `${basename}\n${folder}`,
+		});
+		n.onclick = () => {
+			window.focus();
+			void this.app.workspace.openLinkText(note.path, '', false);
+			void this.store.markRead(note.id);
+		};
 	}
 
 	onunload() {

@@ -1,7 +1,7 @@
 {
 	"id": "vault-inbox",
 	"name": "Vault Inbox",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"minAppVersion": "0.15.0",
 	"description": "Get notified in a sidebar inbox when new files appear in folders or bases you watch.",
 	"author": "Vito Margiotta",

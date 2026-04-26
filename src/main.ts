@@ -1,99 +1,77 @@
-import {App, Editor, MarkdownView, Modal, Notice, Plugin} from 'obsidian';
-import {DEFAULT_SETTINGS, MyPluginSettings, SampleSettingTab} from "./settings";
+import { Plugin, WorkspaceLeaf } from 'obsidian';
+import { DEFAULT_SETTINGS, VaultInboxSettings, VIEW_TYPE_INBOX } from './types';
+import { NotificationStore } from './store';
+import { Watcher } from './watcher';
+import { InboxView } from './view';
+import { VaultInboxSettingTab } from './settings';
 
-// Remember to rename these classes and interfaces!
-
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+export default class VaultInboxPlugin extends Plugin {
+	settings!: VaultInboxSettings;
+	store!: NotificationStore;
+	private watcher!: Watcher;
+	private ribbonEl?: HTMLElement;
+	private ribbonBadge?: HTMLElement;
 
 	async onload() {
 		await this.loadSettings();
 
-		// This creates an icon in the left ribbon.
-		this.addRibbonIcon('dice', 'Sample', (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
-		});
+		this.store = new NotificationStore(this.settings, () => this.saveData(this.settings));
+		this.watcher = new Watcher(this, this.store, () => this.settings.rules);
+		this.watcher.start();
 
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status bar text');
+		this.registerView(VIEW_TYPE_INBOX, (leaf) => new InboxView(leaf, this.store));
 
-		// This adds a simple command that can be triggered anywhere
+		this.ribbonEl = this.addRibbonIcon('inbox', 'Vault Inbox', () => { void this.activateView(); });
+		this.ribbonEl.addClass('vault-inbox-ribbon');
+		this.ribbonEl.style.position = 'relative';
+		this.ribbonBadge = this.ribbonEl.createDiv({ cls: 'vault-inbox-ribbon-badge' });
+
 		this.addCommand({
-			id: 'open-modal-simple',
-			name: 'Open modal (simple)',
-			callback: () => {
-				new SampleModal(this.app).open();
-			}
+			id: 'open-inbox',
+			name: 'Open inbox',
+			callback: () => { void this.activateView(); },
 		});
-		// This adds an editor command that can perform some operation on the current editor instance
 		this.addCommand({
-			id: 'replace-selected',
-			name: 'Replace selected content',
-			editorCallback: (editor: Editor, view: MarkdownView) => {
-				editor.replaceSelection('Sample editor command');
-			}
-		});
-		// This adds a complex command that can check whether the current state of the app allows execution of the command
-		this.addCommand({
-			id: 'open-modal-complex',
-			name: 'Open modal (complex)',
-			checkCallback: (checking: boolean) => {
-				// Conditions to check
-				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (markdownView) {
-					// If checking is true, we're simply "checking" if the command can be run.
-					// If checking is false, then we want to actually perform the operation.
-					if (!checking) {
-						new SampleModal(this.app).open();
-					}
-
-					// This command will only show up in Command Palette when the check function returns true
-					return true;
-				}
-				return false;
-			}
+			id: 'mark-all-read',
+			name: 'Mark all notifications as read',
+			callback: () => { void this.store.markAllRead(); },
 		});
 
-		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+		this.addSettingTab(new VaultInboxSettingTab(this.app, this));
 
-		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		// Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			new Notice("Click");
-		});
-
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
-
+		this.store.on('change', () => this.refreshBadge());
+		this.refreshBadge();
 	}
 
 	onunload() {
+		// View instances are cleaned up by Obsidian; nothing else to do.
+	}
+
+	private refreshBadge(): void {
+		if (!this.ribbonBadge) return;
+		const unread = this.store.unreadCount();
+		this.ribbonBadge.style.display = unread > 0 ? 'block' : 'none';
+	}
+
+	private async activateView(): Promise<void> {
+		const { workspace } = this.app;
+		let leaf: WorkspaceLeaf | null = workspace.getLeavesOfType(VIEW_TYPE_INBOX)[0] ?? null;
+		if (!leaf) {
+			leaf = workspace.getRightLeaf(false);
+			if (leaf) await leaf.setViewState({ type: VIEW_TYPE_INBOX, active: true });
+		}
+		if (leaf) workspace.revealLeaf(leaf);
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<MyPluginSettings>);
+		const data = (await this.loadData()) as Partial<VaultInboxSettings> | null;
+		this.settings = { ...DEFAULT_SETTINGS, ...(data ?? {}) };
+		// Defensive: ensure arrays are arrays.
+		if (!Array.isArray(this.settings.rules)) this.settings.rules = [];
+		if (!Array.isArray(this.settings.notifications)) this.settings.notifications = [];
 	}
 
 	async saveSettings() {
 		await this.saveData(this.settings);
-	}
-}
-
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
-
-	onOpen() {
-		let {contentEl} = this;
-		contentEl.setText('Woah!');
-	}
-
-	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
 	}
 }

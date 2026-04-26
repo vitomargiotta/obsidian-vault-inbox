@@ -1,8 +1,115 @@
-/*
+.vault-inbox-view {
+	padding: 0;
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+.vault-inbox-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 8px 12px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	gap: 8px;
+}
 
-If your plugin does not need CSS, delete this file.
+.vault-inbox-title {
+	font-weight: 600;
+}
 
-*/
+.vault-inbox-actions {
+	display: flex;
+	gap: 4px;
+}
+
+.vault-inbox-actions button {
+	font-size: 11px;
+	padding: 2px 6px;
+}
+
+.vault-inbox-list {
+	display: flex;
+	flex-direction: column;
+}
+
+.vault-inbox-empty {
+	padding: 16px 12px;
+	color: var(--text-muted);
+	font-size: 12px;
+	text-align: center;
+}
+
+.vault-inbox-item {
+	display: flex;
+	gap: 8px;
+	align-items: flex-start;
+	padding: 8px 12px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	cursor: pointer;
+}
+
+.vault-inbox-item:hover {
+	background: var(--background-modifier-hover);
+}
+
+.vault-inbox-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	margin-top: 6px;
+	flex-shrink: 0;
+	background: transparent;
+}
+
+.vault-inbox-dot.is-unread {
+	background: var(--interactive-accent);
+}
+
+.vault-inbox-main {
+	flex: 1;
+	min-width: 0;
+}
+
+.vault-inbox-name {
+	font-size: 13px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.vault-inbox-item.is-unread .vault-inbox-name {
+	font-weight: 600;
+}
+
+.vault-inbox-item.is-read .vault-inbox-name {
+	color: var(--text-muted);
+}
+
+.vault-inbox-meta {
+	font-size: 11px;
+	color: var(--text-muted);
+	margin-top: 2px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.vault-inbox-ribbon-badge {
+	position: absolute;
+	top: 2px;
+	right: 2px;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--interactive-accent);
+	pointer-events: none;
+}
+
+.vault-inbox-rule-row {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	margin-bottom: 8px;
+}
+
+.vault-inbox-rule-row input[type="text"] {
+	flex: 1;
+}

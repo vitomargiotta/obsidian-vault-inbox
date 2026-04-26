@@ -50,8 +50,8 @@ export default class VaultInboxPlugin extends Plugin {
 		if (typeof Notification === 'undefined') return;
 		const basename = (note.path.split('/').pop() ?? note.path).replace(/\.md$/, '');
 		const folder = note.path.includes('/') ? note.path.slice(0, note.path.lastIndexOf('/')) : '/';
-		const n = new Notification('Vault Inbox', {
-			body: `${basename}\n${folder}`,
+		const n = new Notification(basename, {
+			body: `Vault Inbox: new file added to ${folder}`,
 		});
 		n.onclick = () => {
 			window.focus();
